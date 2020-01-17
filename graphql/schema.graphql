@@ -9,9 +9,17 @@ type Query {
 
 		trips: [Trip!]! @paginate(defaultCount: 10)
 		trip(id: ID @eq): Trip @find
+
+		me: User @auth(guard: "api")
 }
 
 type Mutation {
+	# Login
+	login(
+		email: String!
+		password: String!
+	): String @field(resolver: "AuthMutator")
+
 	# Station
 	createStation(
 		name: String! @rules(apply: ["required", "min:4", "unique:stations"])
@@ -84,7 +92,9 @@ type Mutation {
 		employee: ID! @rules(apply: ["required"])
 		subscribed: Boolean
 		confirmed: Boolean
-	): EmployeeTrip @create
+	): EmployeeTrip
+		@field(resolver: "createEmployeeTripMutator@create")
+		@middleware(checks: ["auth:api"])
 
 }
 
