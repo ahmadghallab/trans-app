@@ -1,15 +1,18 @@
-"A datetime string with format `Y-m-d H:i:s`, e.g. `2018-01-01 13:00:00`."
 scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
-
-"A date string with format `Y-m-d`, e.g. `2011-05-23`."
-scalar Date @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\Date")
 
 type Query {
     stations: [Station!]! @paginate(defaultCount: 10)
     station(id: ID @eq): Station @find
+
+    lines: [Line!]! @paginate(defaultCount: 10)
+    line(id: ID @eq): Line @find
+
+		trips: [Trip!]! @paginate(defaultCount: 10)
+		trip(id: ID @eq): Trip @find
 }
 
 type Mutation {
+	# Station
 	createStation(
 		name: String! @rules(apply: ["required", "min:4", "unique:stations"])
 		latitude: String! @rules(apply: ["required"])
@@ -26,6 +29,89 @@ type Mutation {
 	deleteStation(
 		id: ID!
 	): Station @delete
+
+	# Line
+	createLine(
+		name: String! @rules(apply: ["required", "min: 4", "unique:lines"])
+	): Line! @create
+
+	updateLine(
+		id: ID!
+		name: String
+	): Line @update
+
+	deleteLine(
+		id: ID!
+	): Line @delete
+
+	# LineStation
+	createLineStation(
+		line_id: ID! @rules(apply: ["required"])
+		station_id: ID! @rules(apply: ["required"])
+	): LineStation! @create
+
+	updateLineStation(
+		id: ID!
+		line_id: ID
+		station_id: ID
+	): LineStation @update
+
+	deleteLineStation(
+		id: ID!
+	): LineStation @delete
+
+	# User
+	createUser(
+		name: String! @rules(apply: ["required", "min:4"])
+		email: String! @rules(apply: ["email", "unique:users"])
+		password: String! @rules(apply: ["min:4"]) @bcrypt
+		phone_number: String! @rules(apply: ["required", "min:11", "max:20"])
+		role: String! @rules(apply: ["in:admin,driver,employee"])
+	): User @create
+
+	# Trip
+	createTrip(
+		description: String! @rules(apply: ["required", "min:4"])
+		line: ID! @rules(apply: ["required"])
+		driver: ID! @rules(apply: ["required"])
+		schedule_type: String! @rules(apply: ["required", "in:daily,weekly,monthly,yearly,custom"])
+		schedule_time: DateTime
+	): Trip @create
+
+	# EmployeeTrip
+	createEmployeeTrip(
+		trip: ID! @rules(apply: ["required"])
+		employee: ID! @rules(apply: ["required"])
+		subscribed: Boolean
+		confirmed: Boolean
+	): EmployeeTrip @create
+
+}
+
+type EmployeeTrip {
+	id: ID!
+	trip: Trip! @belongsTo
+	employee: User! @belongsTo
+	subscribed: Boolean!
+	confirmed: Boolean!
+}
+
+type Trip {
+	id: ID!
+	description: String!
+	line: Line! @belongsTo
+	driver: User! @belongsTo
+	schedule_type: String!
+	schedule_time: DateTime!
+	subscriptions: [EmployeeTrip!]! @belongsToMany
+}
+
+type User {
+	id: ID!
+	name: String!
+	email: String!
+	phone_number: String!
+	role: String!
 }
 
 type Station {
@@ -33,4 +119,16 @@ type Station {
 	name: String!
 	latitude: String!
 	longitude: String!
+}
+
+type Line {
+	id: ID!
+	name: String!
+	stations: [Station!]! @belongsToMany
+}
+
+type LineStation {
+	id: ID!
+	line_id: ID!
+	station_id: ID!
 }

@@ -1,12 +1,10 @@
 {
-    "name": "laravel/laravel",
+    "name": "vola/transportation",
     "type": "project",
-    "description": "The Laravel Framework.",
+    "description": "Transportation Application",
     "keywords": [
-        "framework",
-        "laravel"
+        "transportation"
     ],
-    "license": "MIT",
     "require": {
         "php": "^7.2",
         "fideloper/proxy": "^4.0",

@@ -4,13 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Station extends Model
+class Line extends Model
 {
     protected $guarded = [];
 
-    public function lines()
+    public function stations()
     {
-    	return $this->belongsToMany(Line::class);
+    	return $this->belongsToMany(Station::class);
     }
-    
 }
