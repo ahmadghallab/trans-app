@@ -15,8 +15,8 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        TripSubscriptionEvent::class => [
-            TripSubscriptionEmailListener::class,
+        Registered::class => [
+            SendEmailVerificationNotification::class,
         ],
     ];
 

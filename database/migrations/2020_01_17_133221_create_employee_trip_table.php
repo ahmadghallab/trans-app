@@ -17,8 +17,9 @@ class CreateEmployeeTripTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('trip');
             $table->unsignedBigInteger('employee');
-            $table->boolean('subscribed')->default(0);
-            $table->boolean('confirmed')->default(0);
+            $table->timestamp('subscribed_at')->nullable();
+            $table->timestamp('confirmation_sent_at')->nullable();
+            $table->timestamp('confirmed_at')->nullable();
             $table->timestamps();
 
             $table->unique(['trip', 'employee']);

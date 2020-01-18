@@ -14,12 +14,6 @@ type Query {
 }
 
 type Mutation {
-	# Login
-	login(
-		email: String!
-		password: String!
-	): String @field(resolver: "AuthMutator")
-
 	# Station
 	createStation(
 		name: String! @rules(apply: ["required", "min:4", "unique:stations"])
@@ -54,14 +48,14 @@ type Mutation {
 
 	# LineStation
 	createLineStation(
-		line_id: ID! @rules(apply: ["required"])
-		station_id: ID! @rules(apply: ["required"])
+		line: ID! @rules(apply: ["required"])
+		station: ID! @rules(apply: ["required"])
 	): LineStation! @create
 
 	updateLineStation(
 		id: ID!
-		line_id: ID
-		station_id: ID
+		line: ID
+		station: ID
 	): LineStation @update
 
 	deleteLineStation(
@@ -77,6 +71,11 @@ type Mutation {
 		role: String! @rules(apply: ["in:admin,driver,employee"])
 	): User @create
 
+	login(
+		email: String!
+		password: String!
+	): String @field(resolver: "AuthMutator@login")
+
 	# Trip
 	createTrip(
 		description: String! @rules(apply: ["required", "min:4"])
@@ -90,20 +89,28 @@ type Mutation {
 	createEmployeeTrip(
 		trip: ID! @rules(apply: ["required"])
 		employee: ID! @rules(apply: ["required"])
-		subscribed: Boolean
-		confirmed: Boolean
 	): EmployeeTrip
-		@field(resolver: "createEmployeeTripMutator@create")
-		@middleware(checks: ["auth:api"])
+		@field(resolver: "EmployeeTripMutator@create")
+		# @middleware(checks: ["auth:api"])
 
+	joinTrip(id: ID!): EmployeeTrip
+		@field(resolver: "EmployeeTripMutator@join")
+
+	sendConfirmation(id: ID!): EmployeeTrip
+		@field(resolver: "EmployeeTripMutator@sendConfirmation")
+
+	confirmTrip(id: ID!): EmployeeTrip
+		@field(resolver: "EmployeeTripMutator@confirm")
+	
 }
 
 type EmployeeTrip {
 	id: ID!
 	trip: Trip! @belongsTo
 	employee: User! @belongsTo
-	subscribed: Boolean!
-	confirmed: Boolean!
+	subscribed_at: DateTime
+	confirmation_sent_at: DateTime
+	confirmed_at: DateTime
 }
 
 type Trip {
@@ -113,7 +120,7 @@ type Trip {
 	driver: User! @belongsTo
 	schedule_type: String!
 	schedule_time: DateTime!
-	subscriptions: [EmployeeTrip!]! @belongsToMany
+	subscriptions: [EmployeeTrip!]! @hasMany
 }
 
 type User {
@@ -139,6 +146,6 @@ type Line {
 
 type LineStation {
 	id: ID!
-	line_id: ID!
-	station_id: ID!
+	line: ID!
+	station: ID!
 }

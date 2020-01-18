@@ -10,6 +10,6 @@ class Line extends Model
 
     public function stations()
     {
-    	return $this->belongsToMany(Station::class);
+    	return $this->belongsToMany(Station::class, 'line_station', 'line', 'station');
     }
 }

@@ -15,14 +15,14 @@ class CreateLineStationTable extends Migration
     {
         Schema::create('line_station', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('line_id');
-            $table->unsignedBigInteger('station_id');
+            $table->unsignedBigInteger('line');
+            $table->unsignedBigInteger('station');
             $table->timestamps();
 
-            $table->unique(['line_id', 'station_id']);
+            $table->unique(['line', 'station']);
 
-            $table->foreign('line_id')->references('id')->on('lines')->onDelete('cascade');
-            $table->foreign('station_id')->references('id')->on('stations')->onDelete('cascade');
+            $table->foreign('line')->references('id')->on('lines')->onDelete('cascade');
+            $table->foreign('station')->references('id')->on('stations')->onDelete('cascade');
         });
     }
 
