@@ -1,16 +1,23 @@
 scalar DateTime @scalar(class: "Nuwave\\Lighthouse\\Schema\\Types\\Scalars\\DateTime")
 
 type Query {
-    stations: [Station!]! @paginate(defaultCount: 10)
-    station(id: ID @eq): Station @find
+	stations: [Station!]! @paginate(defaultCount: 10)
+	station(id: ID @eq): Station @find
 
-    lines: [Line!]! @paginate(defaultCount: 10)
-    line(id: ID @eq): Line @find
+	lines: [Line!]! @paginate(defaultCount: 10)
+	line(id: ID @eq): Line @find
 
-		trips: [Trip!]! @paginate(defaultCount: 10)
-		trip(id: ID @eq): Trip @find
+	trips: [Trip!]! @paginate(defaultCount: 10)
+	trip(id: ID @eq): Trip @find
 
-		me: User @auth(guard: "api")
+	me: User @auth(guard: "api")
+}
+
+input EmployeeTripInput {
+	trip: ID! @rules(apply: ["required"])
+	employee: ID! @rules(apply: ["required"])
+	created_at: DateTime
+	updated_at: DateTime
 }
 
 type Mutation {
@@ -86,12 +93,15 @@ type Mutation {
 	): Trip @create
 
 	# EmployeeTrip
+	bulkCreateEmployeeTrip(input: [EmployeeTripInput!]!): String
+		@field(resolver: "EmployeeTripMutator@bulkCreate")
+		# @middleware(checks: ["auth:api"])
+
 	createEmployeeTrip(
 		trip: ID! @rules(apply: ["required"])
-		employee: ID! @rules(apply: ["required"])
-	): EmployeeTrip
+		employee: [ID!]! @rules(apply: ["required"])
+	): [EmployeeTrip]
 		@field(resolver: "EmployeeTripMutator@create")
-		# @middleware(checks: ["auth:api"])
 
 	joinTrip(id: ID!): EmployeeTrip
 		@field(resolver: "EmployeeTripMutator@join")

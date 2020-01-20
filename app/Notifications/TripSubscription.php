@@ -11,16 +11,16 @@ class TripSubscription extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $employeeTrip;
+    protected $trip;
 
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct($employeeTrip)
+    public function __construct($trip)
     {
-        $this->employeeTrip = $employeeTrip;
+        $this->trip = $trip;
     }
 
     /**
@@ -42,11 +42,10 @@ class TripSubscription extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $url = url('/trip/join/'.$this->employeeTrip->id);
-        $employeeName = $this->employeeTrip->employee()->first()->name;
+        $url = url('/trip/join/'.$this->trip);
 
         return (new MailMessage)
-            ->greeting('Hi, '.$employeeName)
+            ->greeting('Hello')
             ->line('You are invited to join a trip')
             ->action('Join Now', $url)
             ->line('Thank you for using our application!');

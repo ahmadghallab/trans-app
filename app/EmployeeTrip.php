@@ -10,6 +10,8 @@ class EmployeeTrip extends Model
 
     protected $guarded = [];
 
+    public $timestamps = false;
+
     public function trip()
     {
         return $this->belongsTo(Trip::class, 'trip');

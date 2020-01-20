@@ -47,7 +47,7 @@ class TripSubscriptionConfirmation extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->greeting('Hi, '.$employeeName)
-            ->line('These a conformation message from the driver')
+            ->line('This is a confirmation message from the driver')
             ->action('Yes I am here', $url)
             ->line('Thank you for using our application!');
     }

@@ -4,6 +4,8 @@ namespace App\GraphQL\Mutations;
 
 use App\EmployeeTrip;
 use App\Notifications\TripSubscription;
+use App\Notifications\TripSubscriptionConfirmation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Nuwave\Lighthouse\Support\Contracts\GraphQLContext;
@@ -20,38 +22,67 @@ class EmployeeTripMutator
      */
     public function create($rootValue, array $args, GraphQLContext $context)
     {
-        $inputData = [
-            'trip' => $args['trip'],
-            'employee' => $args['employee']
-        ];
-        $employeeTrip = EmployeeTrip::create($inputData);
 
-        $employee = $employeeTrip->employee()->first();
+        $trip = $args['trip'];
+        $employees = $args['employee'];
 
-        Notification::route('mail', $employee->email)
-            ->notify(new TripSubscription($employeeTrip));
+        $output = [];
+        $emails = [];
 
-        return $employeeTrip;
+        foreach($employees as $employee) {
+
+            $employeeTrip = new EmployeeTrip();
+
+            $employeeTrip->trip = $trip;
+            $employeeTrip->employee = $employee;
+
+            $employeeTrip->save();
+
+            array_push($output, $employeeTrip);
+            array_push($emails, $employeeTrip->employee()->first()->email);
+            
+        }
+
+        Notification::route('mail', $emails)
+            ->notify(new TripSubscription($trip));
+
+        return $output;
+    }
+
+    public function bulkCreate($rootValue, array $args, GraphQLContext $context)
+    {
+        $input = Arr::except($args, ['directive'])['input'];
+
+        $employeeTrip = EmployeeTrip::insert($input);
+
+        return "Resources created";
     }
 
     public function join($rootValue, array $args, GraphQLContext $context)
     {
-        return $this->joinConfirmTrip($args['id'], 'subscribed_at');
+        $employeeTrip = EmployeeTrip::findOrFail($args['id']);
+        return $this->setTimeNow($employeeTrip, 'subscribed_at');
     }
 
     public function sendConfirmation($rootValue, array $args, GraphQLContext $context)
     {
-        return $this->joinConfirmTrip($args['id'], 'confirmation_sent_at');
+        $employeeTrip = EmployeeTrip::findOrFail($args['id']);
+        $employee = $employeeTrip->employee()->first();
+
+        Notification::route('mail', $employee->email)
+            ->notify(new TripSubscriptionConfirmation($employeeTrip));
+
+        return $this->setTimeNow($employeeTrip, 'confirmation_sent_at');
     }
 
     public function confirm($rootValue, array $args, GraphQLContext $context)
     {
-        return $this->joinConfirmTrip($args['id'], 'confirmed_at');
+        $employeeTrip = EmployeeTrip::findOrFail($args['id']);
+        return $this->setTimeNow($employeeTrip, 'confirmed_at');
     }
 
-    protected function joinConfirmTrip($id, $field)
+    protected function setTimeNow($employeeTrip, $field)
     {
-        $employeeTrip = EmployeeTrip::findOrFail($id);
         $employeeTrip->$field = Carbon::now();
         $employeeTrip->save();
 

@@ -20,7 +20,8 @@ class CreateEmployeeTripTable extends Migration
             $table->timestamp('subscribed_at')->nullable();
             $table->timestamp('confirmation_sent_at')->nullable();
             $table->timestamp('confirmed_at')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'));
 
             $table->unique(['trip', 'employee']);
 
